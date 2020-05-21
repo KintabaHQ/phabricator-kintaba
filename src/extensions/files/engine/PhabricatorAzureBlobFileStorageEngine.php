@@ -1,6 +1,7 @@
 <?php
 
-final class PhabricatorAzureBlobFileStorageEngine extends PhabricatorFileStorageEngine {
+final class PhabricatorAzureBlobFileStorageEngine extends
+  PhabricatorFileStorageEngine {
   public function getEngineIdentifier() {
     return 'azure-blob';
   }
@@ -15,20 +16,17 @@ final class PhabricatorAzureBlobFileStorageEngine extends PhabricatorFileStorage
     $account_key = PhabricatorEnv::getEnvConfig('azure-blob.account-key');
     $container = PhabricatorEnv::getEnvConfig('azure-blob.container');
 
-    return (
-      strlen($endpoint) &&
+    return strlen($endpoint) &&
       strlen($account_name) &&
       strlen($account_key) &&
-      strlen($container)
-    );
+      strlen($container);
   }
 
   public function writeFile($data, array $params) {
     $az = $this->newAzureBlobAPI();
 
     $seed = Filesystem::readRandomCharacters(20);
-    $parts = array();
-    $parts[] = 'phabricator';
+    $parts = [];
 
     $instance_name = PhabricatorEnv::getEnvConfig('cluster.instance');
     if (strlen($instance_name)) {
@@ -39,22 +37,18 @@ final class PhabricatorAzureBlobFileStorageEngine extends PhabricatorFileStorage
     $parts[] = substr($seed, 2, 2);
     $parts[] = substr($seed, 4);
 
-    $name = implode('/', $parts);
+    $name = implode('-', $parts);
 
     AphrontWriteGuard::willWrite();
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall(
-      array(
-        'type' => 'azure-blob',
-        'method' => 'putObject',
-      )
-    );
+    $call_id = $profiler->beginServiceCall([
+      'type' => 'azure-blob',
+      'method' => 'putObject',
+    ]);
 
-    $az
-      ->setParametersForPutObject($handle)
-      ->resolve();
+    $az->setParametersForPutObject($name, $data)->resolve();
 
-    $profiler->endServiceCall($call_id, array());
+    $profiler->endServiceCall($call_id, []);
     return $name;
   }
 
@@ -62,18 +56,14 @@ final class PhabricatorAzureBlobFileStorageEngine extends PhabricatorFileStorage
     $az = $this->newAzureBlobAPI();
 
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall(
-      array(
-        'type' => 'azure-blob',
-        'method' => 'getObject',
-      )
-    );
+    $call_id = $profiler->beginServiceCall([
+      'type' => 'azure-blob',
+      'method' => 'getObject',
+    ]);
 
-    $az
-      ->setParametersForGetObject($handle)
-      ->resolve();
+    $result = $az->setParametersForGetObject($handle)->resolve();
 
-    $profiler->endServiceCall($call_id, array());
+    $profiler->endServiceCall($call_id, []);
 
     return $result;
   }
@@ -83,18 +73,14 @@ final class PhabricatorAzureBlobFileStorageEngine extends PhabricatorFileStorage
 
     AphrontWriteGuard::willWrite();
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall(
-      array(
-        'type' => 'azure-blob',
-        'method' => 'deleteObject',
-      )
-    );
+    $call_id = $profiler->beginServiceCall([
+      'type' => 'azure-blob',
+      'method' => 'deleteObject',
+    ]);
 
-    $az
-      ->setParametersForDeleteObject($handle)
-      ->resolve();
+    $az->setParametersForDeleteObject($handle)->resolve();
 
-    $profiler->endServiceCall($call_id, array());
+    $profiler->endServiceCall($call_id, []);
   }
 
   private function newAzureBlobAPI() {
@@ -104,7 +90,7 @@ final class PhabricatorAzureBlobFileStorageEngine extends PhabricatorFileStorage
     $container = PhabricatorEnv::getEnvConfig('azure-blob.container');
 
     return id(new PhutilAzureBlobFuture())
-      ->setAccountKey($account_key)
+      ->setAccountKey(new PhutilOpaqueEnvelope($account_key))
       ->setAccountName($account_name)
       ->setContainerName($container)
       ->setEndpoint($endpoint);

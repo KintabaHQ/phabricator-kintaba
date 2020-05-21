@@ -2,6 +2,7 @@
 
 final class PhutilAzureBlobFuture extends FutureProxy {
   const DATE_HEADER = 'x-ms-date';
+  private $future;
   private $accountName;
   private $accountKey;
   private $containerName;
@@ -9,7 +10,7 @@ final class PhutilAzureBlobFuture extends FutureProxy {
   private $httpMethod = 'GET';
   private $path;
   private $endpoint;
-  private $headers = array();
+  private $headers = [];
   private $data = '';
 
   public function __construct() {
@@ -18,10 +19,20 @@ final class PhutilAzureBlobFuture extends FutureProxy {
 
   public function setAccountName($account_name) {
     $this->accountName = $account_name;
+    return $this;
   }
 
   public function getAccountName() {
     return $this->accountName;
+  }
+
+  public function setAccountKey(PhutilOpaqueEnvelope $account_key) {
+    $this->accountKey = $account_key;
+    return $this;
+  }
+
+  public function getAccountKey() {
+    return $this->accountKey;
   }
 
   public function setContainerName($container_name) {
@@ -82,7 +93,9 @@ final class PhutilAzureBlobFuture extends FutureProxy {
     $container_name = $this->getContainerName();
 
     $this->setHTTPMethod('GET');
-    $this->setPath($container_name.'/'.$key);
+    $this->setPath($container_name . '/' . $key);
+
+    $this->addHeader('Content-Type', 'application/octet-stream');
 
     return $this;
   }
@@ -91,9 +104,10 @@ final class PhutilAzureBlobFuture extends FutureProxy {
     $container_name = $this->getContainerName();
 
     $this->setHTTPMethod('PUT');
-    $this->setPath($container_name.'/'.$key);
+    $this->setPath($container_name . '/' . $key);
 
     $this->addHeader('Content-Type', 'application/octet-stream');
+    $this->addHeader('X-Ms-Blob-Type', 'BlockBlob');
 
     $this->setData($value);
 
@@ -104,18 +118,18 @@ final class PhutilAzureBlobFuture extends FutureProxy {
     $container_name = $this->getContainerName();
 
     $this->setHTTPMethod('DELETE');
-    $this->setPath($container_name.'/'.$key);
+    $this->setPath($container_name . '/' . $key);
 
     return $this;
   }
 
   public function addHeader($key, $value) {
-    $this->headers[] = array($key, $value);
+    $this->headers[] = [$key, $value];
     return $this;
   }
 
   protected function getParameters() {
-    return array();
+    return [];
   }
 
   protected function getProxiedFuture() {
@@ -126,11 +140,9 @@ final class PhutilAzureBlobFuture extends FutureProxy {
       $path = $this->getPath();
       $data = $this->getData();
 
-      $uri = id(new PhutilURI("https://{$host}/", $params))
-           ->setPath($path);
+      $uri = id(new PhutilURI("https://{$host}/", $params))->setPath($path);
 
-      $future = id(new HTTPSFuture($uri, $data))
-              ->setMethod($method);
+      $future = id(new HTTPSFuture($uri, $data))->setMethod($method);
 
       foreach ($this->headers as $header) {
         list($key, $value) = $header;
@@ -158,31 +170,14 @@ final class PhutilAzureBlobFuture extends FutureProxy {
   protected function didReceiveResult($result) {
     list($status, $body, $headers) = $result;
 
-    try {
-      $xml = @(new SimpleXMLElement($body));
-    } catch (Exception $ex) {
-      $xml = null;
-    }
-
-    if ($status->isError() || !$xml) {
+    if ($status->isError()) {
       if (!($status instanceof HTTPFutureHTTPResponseStatus)) {
         throw $status;
       }
 
-      $params = array(
-        'body' => $body,
-      );
-      if ($xml) {
-        $params['RequestID'] = $xml->RequestID[0];
-        $errors = array($xml->Error);
-        foreach ($errors as $error) {
-          $params['Errors'][] = array($error->Code, $error->Message);
-        }
-      }
-
-      throw new PhutilAWSException($status->getStatusCode(), $params);
+      throw new PhutilAWSException($status->getStatusCode(), []);
     }
 
-    return $xml;
+    return $body;
   }
 }
