@@ -25,6 +25,7 @@ jobs:
         tags: latest
         repository: kintaba/phabricator
         dockerfile: Dockerfile
+        tag_with_sha: true
   build-daemon:
     runs-on: ubuntu-latest
     steps:
