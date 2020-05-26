@@ -1,0 +1,49 @@
+name: Docker Build and Push
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build-phabricator:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - uses: docker/build-push-action@v1.1.0
+      name: Build base phabricator image
+      with:
+        push: false
+        tags: latest
+        repository: cole2026/phabricator
+        dockerfile: phabricator/Dockerfile
+    - uses: docker/build-push-action@v1.1.0
+      name: Build and push kintaba-phabricator
+      with:
+        username: ${{ Secrets.DOCKER_USERNAME }}
+        password: ${{ Secrets.DOCKER_PASSWORD }}
+        tags: latest
+        repository: kintaba/phabricator
+        dockerfile: Dockerfile
+  build-daemon:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - uses: docker/build-push-action@v1.1.0
+      name: Build base phabricator-daemon image
+      with:
+        push: false
+        tags: latest
+        repository: cole2026/phabricator-daemon
+        dockerfile: phabricator/Dockerfile.daemon
+    - uses: docker/build-push-action@v1.1.0
+      name: Build and push kintaba-phabricator-daemon
+      with:
+        username: ${{ Secrets.DOCKER_USERNAME }}
+        password: ${{ Secrets.DOCKER_PASSWORD }}
+        tags: latest
+        repository: kintaba/phabricator-daemon
+        tag_with_sha: true
+        dockerfile: Dockerfile.daemon
