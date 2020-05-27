@@ -15,8 +15,9 @@ jobs:
       with:
         push: false
         tags: latest
+        path: phabricator
         repository: cole2026/phabricator
-        dockerfile: phabricator/Dockerfile
+        dockerfile: Dockerfile
     - uses: docker/build-push-action@v1.1.0
       name: Build and push kintaba-phabricator
       with:
@@ -37,8 +38,9 @@ jobs:
       with:
         push: false
         tags: latest
+        path: phabricator
         repository: cole2026/phabricator-daemon
-        dockerfile: phabricator/Dockerfile.daemon
+        dockerfile: Dockerfile.daemon
     - uses: docker/build-push-action@v1.1.0
       name: Build and push kintaba-phabricator-daemon
       with:
