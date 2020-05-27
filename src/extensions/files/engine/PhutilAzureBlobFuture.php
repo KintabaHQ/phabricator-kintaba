@@ -108,6 +108,7 @@ final class PhutilAzureBlobFuture extends FutureProxy {
 
     $this->addHeader('Content-Type', 'application/octet-stream');
     $this->addHeader('X-Ms-Blob-Type', 'BlockBlob');
+    $this->addHeader('Content-Length', strlen($value));
 
     $this->setData($value);
 
