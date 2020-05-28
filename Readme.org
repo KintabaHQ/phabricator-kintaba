@@ -1,0 +1,40 @@
+#+TITLE: Kintaba Extensions for Phabricator
+
+This contains extensions for Phabricator used by [Kintaba](https://kintaba.com) internally.
+
+Right now, this includes:
+
+1. *Azure Blob Storage* support.  An adapter to use Azure's blob storage as a Storage Engine for storing Files within phabricator.
+
+Everything here, unless otherwise mentioned, should be considered alpha code, please use at your own risk.  We do use these in our instance, but we're okay with a little instability on our own instance.
+
+* Setup Instructions
+
+  Drop this into a folder that sits alongside the ~phabricator~ directory in your phabricator instance.  Typically, this will be inside ~/var/www~ like so:
+
+#+BEGIN_SRC sh
+  /var/www # web root
+  /var/www/phabricator
+  /var/www/arcanist
+  /var/www/libkintaba # everything in this repo
+#+END_SRC
+
+Then, just tell phabricator to load this extension in your ~local.json~ file:
+
+#+NAME: /var/www/phabricator/conf/local/local.json
+#+BEGIN_SRC json
+  {
+      "load-libraries": {
+          "libkintaba": "libkintaba/"
+      }
+  }
+#+END_SRC
+
+Once loaded, you'll need to fill out four configuration options in your phabricator web UI:
+
+  1. ~azure-blob.account-key~ The shared account key for the blob account.
+  2. ~azure-blob.account-name~ The name of the blob storage account.
+  3. ~azure-blob.container~ The container that will store phabricator assets.  Typically you'll want to create a ~phabricator~ container just for phabricator assets.
+  4. ~azure-blob.endpoint~ The endpoint, without protocol prefix, of the blob account, typically: ~accountname.blob.core.windows.net~
+
+After filling those out, you can test that uploads work by dragging a file onto the phabricator homepage.
