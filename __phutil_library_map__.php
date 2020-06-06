@@ -9,6 +9,9 @@
 phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
+    'HarbormasterAzureDevopsBuildStepImplemention' => 'src/extensions/harbormaster/step/HarbormasterAzureDevopsBuildStepImplementation.php',
+    'HarbormasterAzureDevopsHookController' => 'src/extensions/harbormaster/controller/HarbormasterAzureDevopsHookController.php',
+    'KintabaHarbormasterApplication' => 'src/extensions/harbormaster/KintabaHarbormasterApplication.php',
     'PhabricatorAzureBlobConfigOptions' => 'src/extensions/config/option/PhabricatorAzureBlobConfigOptions.php',
     'PhabricatorAzureBlobFileStorageEngine' => 'src/extensions/files/engine/PhabricatorAzureBlobFileStorageEngine.php',
     'PhutilAzureBlobFuture' => 'src/extensions/files/engine/PhutilAzureBlobFuture.php',
@@ -16,6 +19,9 @@ phutil_register_library_map(array(
   ),
   'function' => array(),
   'xmap' => array(
+    'HarbormasterAzureDevopsBuildStepImplemention' => 'HarbormasterBuildStepImplementation',
+    'HarbormasterAzureDevopsHookController' => 'HarbormasterController',
+    'KintabaHarbormasterApplication' => 'PhabricatorApplication',
     'PhabricatorAzureBlobConfigOptions' => 'PhabricatorApplicationConfigOptions',
     'PhabricatorAzureBlobFileStorageEngine' => 'PhabricatorFileStorageEngine',
     'PhutilAzureBlobFuture' => 'FutureProxy',
