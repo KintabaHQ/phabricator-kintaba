@@ -5,6 +5,7 @@ This contains extensions for Phabricator used by [Kintaba](https://kintaba.com) 
 Right now, this includes:
 
 1. *Azure Blob Storage* support.  An adapter to use Azure's blob storage as a Storage Engine for storing Files within phabricator.
+2. *Azure Devops* support.  A harbormaster build step for queuing Differential Revisions builds in Azure Devops CI.
 
 Everything here, unless otherwise mentioned, should be considered alpha code, please use at your own risk.  We do use these in our instance, but we're okay with a little instability on our own instance.
 
