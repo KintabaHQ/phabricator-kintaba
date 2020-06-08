@@ -15,12 +15,10 @@ final class HarbormasterAzureDevopsHookController extends
 
     $resource = $body['resource'];
 
-    $properties = idx($resource, 'triggerInfo');
-    if (!$properties) {
-      $properties = [];
-    }
-    $target_phid = idx($properties, 'HARBORMASTER_BUILD_TARGET_PHID');
-
+    $target_phid = idxv($resource, [
+      'triggerInfo',
+      'HARBORMASTER_BUILD_TARGET_PHID',
+    ]);
     if ($target_phid) {
       $viewer = PhabricatorUser::getOmnipotentUser();
       $target = id(new HarbormasterBuildTargetQuery())

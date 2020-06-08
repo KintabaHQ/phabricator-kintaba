@@ -160,8 +160,7 @@ EOTEXT
 
     $response = phutil_json_decode($body);
 
-    $uri_key = 'url';
-    $build_uri = idx($response, $uri_key);
+    $build_uri = idxv($response, ['_links', 'web', 'href']);
     if (!$build_uri) {
       throw new Exception(pht('Azure Devops did not return a "%s"!', $uri_key));
     }
@@ -188,6 +187,36 @@ EOTEXT
   private function getSourceBranch($build_target) {
     if ($build_target instanceof DifferentialDiff) {
       return $build_target->getStagingRef();
+    } elseif ($build_target instanceof PhabricatorRepositoryCommit) {
+      $viewer = PhabricatorUser::getOmnipotentUser();
+      $repository = $build_target->getRepository();
+
+      $branches = DiffusionQuery::callConduitWithDiffusionRequest(
+        $viewer,
+        DiffusionRequest::newFromDictionary([
+          'repository' => $repository,
+          'user' => $viewer,
+        ]),
+        'diffusion.branchquery',
+        [
+          'contains' => $build_target->getCommitIdentifier(),
+          'repository' => $repository->getPHID(),
+        ]
+      );
+
+      if (!$branches) {
+        throw new Exception(
+          pht(
+            'Commit "%s" is not an ancestor of any branch head, so it can not ' .
+              'be built with Azure Devops.',
+            $build_target->getCommitIdentifier()
+          )
+        );
+      }
+
+      $branch = head($branches);
+
+      return 'refs/heads/' . $branch['shortName'];
     }
 
     throw new Exception(
