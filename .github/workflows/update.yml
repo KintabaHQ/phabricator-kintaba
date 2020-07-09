@@ -13,6 +13,7 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
           submodules: 'recursive'
+          token: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: 'Pull Submodules & Commit Changes'
         run: |
           git submodule --quiet foreach git pull --quiet origin ${{ matrix.branch }}
